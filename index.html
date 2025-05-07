@@ -28,7 +28,7 @@
       })
       .then(res => res.text())
       .then(text => {
-        document.getElementById("status").innerText = "ارسال موفق: " + text;
+        document.getElementById("status").innerText = "ارسال موفق: " + new Date().toLocaleTimeString();
       })
       .catch(err => {
         document.getElementById("status").innerText = "خطا در ارسال: " + err.message;
@@ -39,13 +39,21 @@
       document.getElementById("status").innerText = "خطا در گرفتن موقعیت: " + err.message;
     }
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(sendLocation, error, {
-        enableHighAccuracy: true
-      });
-    } else {
-      document.getElementById("status").innerText = "مرورگر از Geolocation پشتیبانی نمی‌کند.";
+    function getAndSendLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(sendLocation, error, {
+          enableHighAccuracy: true
+        });
+      } else {
+        document.getElementById("status").innerText = "مرورگر از Geolocation پشتیبانی نمی‌کند.";
+      }
     }
+
+    // ارسال اولیه
+    getAndSendLocation();
+
+    // ارسال خودکار هر 5 دقیقه (300000 میلی‌ثانیه)
+    setInterval(getAndSendLocation, 300000);
   </script>
 </body>
 </html>
