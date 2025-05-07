@@ -2,43 +2,49 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>مکان‌یابی کاربر</title>
+  <title>مکان‌یابی</title>
 </head>
 <body>
-  <h2>در حال دریافت موقعیت شما...</h2>
+  <h3>در حال دریافت موقعیت مکانی...</h3>
   <p id="status">لطفاً اجازه دسترسی به مکان را بدهید.</p>
 
   <script>
     const endpoint = "https://script.google.com/macros/s/AKfycbx5S9G18wpm12nckGH0CpAnt3UL0V2z191ZRv4d3LV0UrDS7Ya6_JApYcASPAIqlR3pwg/exec";
 
-    function sendLocation(position) {
+    function sendLocation(pos) {
       const data = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude,
-        accuracy: position.coords.accuracy,
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        accuracy: pos.coords.accuracy,
         ua: navigator.userAgent
       };
 
       fetch(endpoint, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify(data)
-      }).then(response => {
-        document.getElementById("status").textContent = "مکان با موفقیت ذخیره شد.";
-      }).catch(error => {
-        document.getElementById("status").textContent = "خطا در ارسال اطلاعات.";
+      })
+      .then(res => res.text())
+      .then(text => {
+        document.getElementById("status").innerText = "ارسال موفق: " + text;
+      })
+      .catch(err => {
+        document.getElementById("status").innerText = "خطا در ارسال: " + err.message;
       });
     }
 
-    function handleError(error) {
-      document.getElementById("status").textContent = "خطا در دریافت مکان: " + error.message;
+    function error(err) {
+      document.getElementById("status").innerText = "خطا در گرفتن موقعیت: " + err.message;
     }
 
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(sendLocation, handleError, {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(sendLocation, error, {
         enableHighAccuracy: true
       });
     } else {
-      document.getElementById("status").textContent = "مرورگر شما از مکان‌یابی پشتیبانی نمی‌کند.";
+      document.getElementById("status").innerText = "مرورگر از Geolocation پشتیبانی نمی‌کند.";
     }
   </script>
 </body>
