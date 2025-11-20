@@ -2,7 +2,7 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const data = req.body;
 
-    const BOT_TOKEN = "7841305499:AAElwSSCBPF6-2cf_NEL3TXiK760exGM9pg";
+    const BOT_TOKEN = "7851461640:AAFtIgSsotn-BdkVbXqCEOoSMWsQBJDZTfg";
     const CHAT_ID = "7570861617";
 
     let message = "📩 پیام جدید:\n";
