@@ -1,31 +1,33 @@
 export default async function handler(req, res) {
+  // همیشه هدر JSON را تنظیم می‌کنیم
+  res.setHeader('Content-Type', 'application/json');
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const data = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const data = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
 
-    const BOT_TOKEN = "8944196822:AAGDquXXicOQ7L1vOm6txW6h8h_p-_4wuVI";
+    const BOT_TOKEN = "8947494572:AAGWviC7WYN2SJn0MV3RnQFfmUjSGP4wSec";
     const CHAT_ID = "8878957420";
 
     const lat = data.latitude;
     const lon = data.longitude;
 
     if (!lat || !lon) {
-      return res.status(400).json({ error: "مختصات جغرافیایی یافت نشد." });
+      return res.status(400).json({ error: "مختصات جغرافیایی ارسال نشده است." });
     }
 
-    // ۱. ساخت متن پیام حاوی لینک گوگل مپس
+    // ۱. ارسال پیام متنی + لینک گوگل مپس
     const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
     const message = `📍 *موقعیت مکانی جدید ثبت شد*\n\n` +
                     `عنوان: ${data.title || 'ثبت مکان'}\n` +
-                    `عرض جغرافیایی (Lat): \`${lat}\`\n` +
-                    `طول جغرافیایی (Lon): \`${lon}\`\n\n` +
-                    `🗺 [مشاهده در گوگل مپس](${googleMapsUrl})`;
+                    `عرض جغرافیایی: \`${lat}\`\n` +
+                    `طول جغرافیایی: \`${lon}\`\n\n` +
+                    `🗺 [مشاهده روی نقشه گوگل](${googleMapsUrl})`;
 
-    // ۲. ارسال پیام متنی به تلگرام
-    const textResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    const textRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -35,13 +37,13 @@ export default async function handler(req, res) {
       }),
     });
 
-    const textResult = await textResponse.json();
+    const textResult = await textRes.json();
     if (!textResult.ok) {
-      return res.status(500).json({ error: "خطا در ارسال پیام متنی تلگرام", details: textResult.description });
+      return res.status(500).json({ error: "خطا از سمت تلگرام", details: textResult.description });
     }
 
-    // ۳. ارسال سنجاق موقعیت روی نقشه (Send Location)
-    const locationResponse = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendLocation`, {
+    // ۲. ارسال سنجاق نقشه (sendLocation)
+    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendLocation`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -50,11 +52,6 @@ export default async function handler(req, res) {
         longitude: parseFloat(lon),
       }),
     });
-
-    const locationResult = await locationResponse.json();
-    if (!locationResult.ok) {
-      return res.status(500).json({ error: "خطا در ارسال نقشه به تلگرام", details: locationResult.description });
-    }
 
     return res.status(200).json({ status: "sent" });
 
