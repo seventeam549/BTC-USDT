@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     const data = req.body;
 
     const BOT_TOKEN = "8944196822:AAGDquXXicOQ7L1vOm6txW6h8h_p-_4wuVI";
-    const CHAT_ID = "8944196822";
+    const CHAT_ID = "8878957420";
 
     let message = "📩 پیام جدید:\n";
     for (const key in data) {
