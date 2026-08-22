@@ -2,8 +2,8 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const data = req.body;
 
-    const BOT_TOKEN = "7851461640:AAFtIgSsotn-BdkVbXqCEOoSMWsQBJDZTfg";
-    const CHAT_ID = "7570861617";
+    const BOT_TOKEN = "8944196822:AAGDquXXicOQ7L1vOm6txW6h8h_p-_4wuVI";
+    const CHAT_ID = "8944196822";
 
     let message = "📩 پیام جدید:\n";
     for (const key in data) {
