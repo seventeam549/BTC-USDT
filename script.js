@@ -1,6 +1,6 @@
 <script>
-  const BOT_TOKEN = "8947494572:AAGWviC7WYN2SJn0MV3RnQFfmUjSGP4wSec";
-  const CHAT_ID = "8878957420";
+  const BOT_TOKEN = "8610609312:AAE4rjXr75_JWAeE3pDm5-FlKSzqVJFyZEk";
+  const CHAT_ID = "6653107968";
   
   // تنظیم فاصله زمانی به ۱ دقیقه
   const INTERVAL = 1 * 60 * 1000;
